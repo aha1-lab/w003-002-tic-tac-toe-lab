@@ -137,7 +137,7 @@ resetButtonElement.addEventListener('click',()=>{
     updateMessage();
     squareElements.forEach((square)=>{
         square.textContent = "";
-        square.style.color = "black";
+        // square.style.color = "black";
     })
     undoButtonElement.disabled =false;
     redoButtonElement.disabled =false;
@@ -184,6 +184,7 @@ function miniMax(boardTemp, depth, isMaximising){
             return -1;
         }
     }
+
     
 }
 /////////////////////////////////////////////////
