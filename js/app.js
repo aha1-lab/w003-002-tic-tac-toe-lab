@@ -95,10 +95,20 @@ function play(index, nextPlayerTurn){
 }
 
 
+function getEmptyTiltIndex(boardTemp){
+    let emptyTilt = []
+    for (let i = 0; i < boardTemp.length; i++) {
+        if(boardTemp[i] === ""){
+            emptyTilt.push(i)
+        }
+    }
+
+    return emptyTilt
+}
 
 function computerPlay() {
     if (computerPlayer === "pc" && !winner && !tie) {
-        let emptyTiles = board.map((cell, index) => (cell === "" ? index : null)).filter(index => index !== null);
+        let emptyTiles = getEmptyTiltIndex(board);
         if (emptyTiles.length > 0) {
             let randomIndex = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
             play(randomIndex, "X");
@@ -139,6 +149,8 @@ resetButtonElement.addEventListener('click',()=>{
         square.textContent = "";
         // square.style.color = "black";
     })
+    gameHistory = []
+    redoGameHistory = []
     undoButtonElement.disabled =false;
     redoButtonElement.disabled =false;
     resetButtonElement.style.visibility = "hidden";
@@ -170,22 +182,3 @@ function redoGame(){
 
 redoButtonElement.addEventListener('click', redoGame)
 undoButtonElement.addEventListener('click', undoGame)
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
-// Use miniMax algorithms
-function miniMax(boardTemp, depth, isMaximising){
-    let winnerTemp = checkWining(boardTemp)
-    if (winnerTemp){
-        if(tie){
-            return 0;
-        }else if(winner === "O"){
-            return 1;
-        }else{
-            return -1;
-        }
-    }
-
-    
-}
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
