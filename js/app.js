@@ -15,7 +15,7 @@ let winningBoard = [[0,1,2],
 
 let gameHistory = []
 let redoGameHistory = []
-let computerPlayer =  "player"//prompt("Please type pc to play with computer or player to play with your friend", "player")
+let computerPlayer =  prompt("Please type pc to play with computer or player to play with your friend", "player")
 
 if(computerPlayer === "pc"){
     console.log(computerPlayer)
@@ -106,7 +106,7 @@ function computerPlay() {
     }
 }
 
-
+// For loop to wait buttons event
 squareElements.forEach((square)=>{
     square.addEventListener('click',()=>{
         let boardIndex = event.target.id
