@@ -46,6 +46,23 @@ function updateMessage(){
 
 updateMessage()
 
+function checkWiningCompareBoard(boardTemp){
+    winningBoard.forEach((line)=>{
+        let a = line[0]
+        let b = line[1]
+        let c = line[2]
+        if(boardTemp[a] === boardTemp[b] && boardTemp[b] === boardTemp[c] && boardTemp[a] !== ""){
+            winner = boardTemp[a]
+            return true
+        }
+    })
+    if(!winner && board.every(cell => cell !== "")){
+        tie = true
+        return true
+    }
+    return false
+}
+
 function checkWining(boardTemp){
     winningBoard.forEach((line)=>{
         let a = line[0]
@@ -59,7 +76,8 @@ function checkWining(boardTemp){
             return true
         }
     })
-    if(!winner && board.every(cell => cell !== "")){
+    let emptyTiles = getEmptyTileIndex(board)
+    if(!winner && emptyTiles.length === 0){
         tie = true
         return true
     }
@@ -88,30 +106,31 @@ const isGameOver = ()=>{
 function play(index, nextPlayerTurn){
     squareElements[index].textContent = playerTurn
     board[index] = playerTurn
-    checkWining(board)
+    checkWiningCompareBoard(board)
     gameHistory.push(index)
     playerTurn = nextPlayerTurn
     redoGameHistory = []
 }
 
 
-function getEmptyTiltIndex(boardTemp){
-    let emptyTilt = []
+function getEmptyTileIndex(boardTemp){
+    let emptyTile = []
     for (let i = 0; i < boardTemp.length; i++) {
         if(boardTemp[i] === ""){
-            emptyTilt.push(i)
+            emptyTile.push(i)
         }
     }
 
-    return emptyTilt
+    return emptyTile
 }
 
 function computerPlay() {
     if (computerPlayer === "pc" && !winner && !tie) {
-        let emptyTiles = getEmptyTiltIndex(board);
+        let emptyTiles = getEmptyTileIndex(board);
         if (emptyTiles.length > 0) {
-            let randomIndex = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
-            play(randomIndex, "X");
+            let randomIndex = Math.floor(Math.random() * emptyTiles.length)
+            let emptyIndex = emptyTiles[randomIndex];
+            play(emptyIndex, "X");
         }
     }
 }
@@ -132,7 +151,6 @@ squareElements.forEach((square)=>{
             displayResults()
         }
     })
-
 })
 
 
@@ -171,14 +189,14 @@ function undoGame(){
 // This function to undo the game
 function redoGame(){
     if(redoGameHistory.length> 0){
-        let redoObject = redoGameHistory.pop()
-        board[redoObject.index] = redoObject.player
-        squareElements[redoObject.index].textContent = redoObject.player
-        gameHistory.push(redoObject.index)
-        playerTurn = (redoObject.player === "O") ? "X" : "O"
-        updateMessage()
+        let redoObject = redoGameHistory.pop();
+        board[redoObject.index] = redoObject.player;
+        squareElements[redoObject.index].textContent = redoObject.player;
+        gameHistory.push(redoObject.index);
+        playerTurn = (redoObject.player === "O") ? "X" : "O";
+        updateMessage();
     }
 }
 
-redoButtonElement.addEventListener('click', redoGame)
-undoButtonElement.addEventListener('click', undoGame)
+redoButtonElement.addEventListener('click', redoGame);
+undoButtonElement.addEventListener('click', undoGame);
