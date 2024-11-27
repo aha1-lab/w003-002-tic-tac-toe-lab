@@ -9,6 +9,18 @@
 </head>
 <body>
   <h1>Tic-Tac-Toe</h1>
+  <div class="scores">
+    <div class="player-score">
+      <h2>Player X score</h2>
+      <h2 class="results-display">0</h2>
+      <input type="add you name hear">
+    </div>
+    <div class="player-score">
+      <h2>Player O score</h2>
+      <h2 class="results-display">0</h2>
+      <input type="add you name hear">
+    </div>
+  </div>
   <h2 id="message">Message</h2>
 
   <section class="board">
@@ -22,7 +34,12 @@
     <div class="sqr" id="7"></div>
     <div class="sqr" id="8"></div>
   </section>
-
-  <button class="reset">Reset</button>
+  <div class="reset-hidden">
+    <button id="reset">Reset</button>
+  </div>
+  <div class="buttoms-control">
+    <button id="undo">undo</button>
+    <button id="redo">redo</button>
+  </div>
 </body>
 </html>

@@ -1,11 +1,29 @@
 body {
-    background-color: gainsboro;
+    background-color: #6b5b95;
     /* Use a system font, if none are available use an available sans-sarif */
     font-family: system-ui, sans-serif;
     margin: 0;
     text-align: center;
   }
   
+  button{
+    font-size: 35px;
+    margin-top: 20px;
+    background-color: #878f99;
+  }
+
+  input{
+    font-size: larger;
+  }
+
+  h1{
+    margin: 0px;
+    color: #a2b9bc;
+    font-size: 75px;
+  }
+  h2{
+    color: #a2b9bc;
+  }
   .board {
     display: flex;
     flex-wrap: wrap;
@@ -18,13 +36,22 @@ body {
   .sqr {
     width: 30%;
     aspect-ratio: 1/1;
-    border: 3px solid black;
+    border: 3px solid #b2ad7f;
     font-size: 64px;
     text-align: center;
+    color: #b2ad7f;
   }
 
-  button{
-    font-size: 25px;
-    margin-top: 20px;
+
+  
+  .player-score{
+    display: inline-block;
+    padding: 0 90px 60px;
+    margin-bottom: 0;
   }
+  .results-display{
+    margin-top: -25px;
+    font-size: 50px;
+  }
+
   

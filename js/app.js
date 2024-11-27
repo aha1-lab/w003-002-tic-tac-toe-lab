@@ -12,20 +12,33 @@ let winningBoard = [[0,1,2],
                     [0,4,8],
                     [2,4,6]]
 
-// for(let i = 0; i< winningBoard.length; i++){
-//     console.log(winningBoard[i])
-// }
 
+let gameHistory = []
+let redoGameHistory = []
+let computerPlayer =  "player"//prompt("Please type pc to play with computer or player to play with your friend", "player")
+
+if(computerPlayer === "pc"){
+    console.log(computerPlayer)
+}
 let playerTurn = "X"
 let winner = false
 let tie = false
-let counter = 0
+let playesScore = [0,0]
 
+const boardElement = document.querySelector(".board")
 const squareElements = document.querySelectorAll(".sqr")
-const resetButtonElement = document.querySelector(".reset")
+const resetButtonElement = document.querySelector("#reset")
+const undoButtonElement = document.querySelector("#undo")
+const redoButtonElement = document.querySelector("#redo")
 const messageElement = document.querySelector("#message")
+const resultsDisplayElements = document.querySelectorAll(".results-display")
 
+resetButtonElement.style.visibility = "hidden";
 
+const displayResults = ()=>{
+    resultsDisplayElements[0].textContent = playesScore[0]
+    resultsDisplayElements[1].textContent = playesScore[1]
+}
 
 function updateMessage(){
     messageElement.textContent = `Player ${playerTurn} turn`
@@ -33,66 +46,145 @@ function updateMessage(){
 
 updateMessage()
 
-function checkWining(){
-    for(let i = 0; i< winningBoard.length; i++){
-        let a = winningBoard[i][0]
-        let b = winningBoard[i][1]
-        let c = winningBoard[i][2]
-        if(board[a] === playerTurn && board[b] === playerTurn && board[c] === playerTurn){
-            squareElements[a].style.color = "red"
-            squareElements[b].style.color = "red"
-            squareElements[c].style.color = "red"
+function checkWining(boardTemp){
+    winningBoard.forEach((line)=>{
+        let a = line[0]
+        let b = line[1]
+        let c = line[2]
+        if(boardTemp[a] === playerTurn && boardTemp[b] === playerTurn && boardTemp[c] === playerTurn){
+            // squareElements[a].style.color = "red"
+            // squareElements[b].style.color = "red"
+            // squareElements[c].style.color = "red"
             winner = playerTurn
-        }else if(counter >=8){
-            tie = true
+            return true
         }
+    })
+    if(!winner && board.every(cell => cell !== "")){
+        tie = true
+        return true
     }
+    return false
 }
 
 const isGameOver = ()=>{
     if(winner){
         messageElement.textContent =`Player ${winner} is the winner`
+        if(winner === 'X') playesScore[0] += 1;
+        else if(winner === 'O') playesScore[1] += 1;
     }else if(tie){
         messageElement.textContent =`Game is tie`
     }
+
+    if(winner || tie){
+        undoButtonElement.disabled =true;
+        redoButtonElement.disabled =true;
+        resetButtonElement.style.visibility = "visible";
+    }
 }
 
-function play(squareTemp, index, playerTurnTemp){
-    squareTemp.textContent = playerTurn
+
+// This function use to display the player simpoles and update the 
+// board and the history
+function play(index, nextPlayerTurn){
+    squareElements[index].textContent = playerTurn
     board[index] = playerTurn
-    checkWining()
-    playerTurn = playerTurnTemp
+    checkWining(board)
+    gameHistory.push(index)
+    playerTurn = nextPlayerTurn
+    redoGameHistory = []
 }
+
+
+
+function computerPlay() {
+    if (computerPlayer === "pc" && !winner && !tie) {
+        let emptyTiles = board.map((cell, index) => (cell === "" ? index : null)).filter(index => index !== null);
+        if (emptyTiles.length > 0) {
+            let randomIndex = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
+            play(randomIndex, "X");
+        }
+    }
+}
+
+
 squareElements.forEach((square)=>{
     square.addEventListener('click',()=>{
         let boardIndex = event.target.id
         if(board[boardIndex] === "" && winner === false){
             if(playerTurn === "X"){
-                play(square, boardIndex, "O")
-            }else{
-                play(square, boardIndex, "X")
+                play(boardIndex, "O")
+                computerPlay()
+            }else if (computerPlayer !== "pc"){
+                play(boardIndex, "X")
             }
             updateMessage()
             isGameOver()
-            counter +=1
-            console.log(board)
+            displayResults()
         }
     })
+
 })
 
 
 // Reset the game
 resetButtonElement.addEventListener('click',()=>{
     board = ["","","",
-        "","","",
-        "","",""]
-    playerTurn = "X"
+             "","","",
+             "","",""];
+    playerTurn = "X";
     winner = false
-    tie = false
-    counter = 0
-    updateMessage()
+    tie = false;;
+    updateMessage();
     squareElements.forEach((square)=>{
-        square.textContent = ""
+        square.textContent = "";
+        square.style.color = "black";
     })
+    undoButtonElement.disabled =false;
+    redoButtonElement.disabled =false;
+    resetButtonElement.style.visibility = "hidden";
 })
 
+// This function to undo the game
+function undoGame(){
+    if(gameHistory.length> 0){
+        let lastIndexAdded = gameHistory.pop()
+        redoGameHistory.push({player:board[lastIndexAdded], index:lastIndexAdded})
+        playerTurn = board[lastIndexAdded]
+        updateMessage()
+        board[lastIndexAdded] = ""
+        squareElements[lastIndexAdded].textContent = ""
+    }
+}
+
+// This function to undo the game
+function redoGame(){
+    if(redoGameHistory.length> 0){
+        let redoObject = redoGameHistory.pop()
+        board[redoObject.index] = redoObject.player
+        squareElements[redoObject.index].textContent = redoObject.player
+        gameHistory.push(redoObject.index)
+        playerTurn = (redoObject.player === "O") ? "X" : "O"
+        updateMessage()
+    }
+}
+
+redoButtonElement.addEventListener('click', redoGame)
+undoButtonElement.addEventListener('click', undoGame)
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+// Use miniMax algorithms
+function miniMax(boardTemp, depth, isMaximising){
+    let winnerTemp = checkWining(boardTemp)
+    if (winnerTemp){
+        if(tie){
+            return 0;
+        }else if(winner === "O"){
+            return 1;
+        }else{
+            return -1;
+        }
+    }
+    
+}
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
