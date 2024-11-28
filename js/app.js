@@ -56,7 +56,8 @@ function checkWiningCompareBoard(boardTemp){
             return true
         }
     })
-    if(!winner && board.every(cell => cell !== "")){
+    let emptyTiles = getEmptyTileIndex(board)
+    if(!winner && emptyTiles.length === 0){
         tie = true
         return true
     }
