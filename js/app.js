@@ -13,18 +13,32 @@ let winningBoard = [[0,1,2],
                     [2,4,6]]
 
 
-let gameHistory = []
-let redoGameHistory = []
-let computerPlayer =  prompt("Please type pc to play with computer or player to play with your friend", "player")
-
-if(computerPlayer === "pc"){
-    console.log(computerPlayer)
+let gameHistory = [];
+let redoGameHistory = [];
+let computerPlayer;
+let secondPlayerName;
+let firtsPlayerName;
+let countdownTimer = false;
+// Create a pop-up window to get the play mode and get player name
+let userSelection =  prompt("Select the game mode: 1: 2 player, 2:easy , 3: difficult", "3")
+if(userSelection=== "1") computerPlayer = ""
+else if(userSelection=== "2") computerPlayer = "pc"
+else computerPlayer = "sm"
+firtsPlayerName =  prompt("Please enter your name", "")
+if(userSelection === "1"){
+    secondPlayerName =  prompt("Please enter your name", "")
+}else{
+    secondPlayerName = "PC"
 }
+console.log(computerPlayer)
+
+let activateTimer =  prompt("Do you want to use timer", "yes")
 let playerTurn = "X"
 let winner = false
 let tie = false
 let playesScore = [0,0]
 
+// Get html elements DOM
 const boardElement = document.querySelector(".board")
 const squareElements = document.querySelectorAll(".sqr")
 const resetButtonElement = document.querySelector("#reset")
@@ -32,6 +46,10 @@ const undoButtonElement = document.querySelector("#undo")
 const redoButtonElement = document.querySelector("#redo")
 const messageElement = document.querySelector("#message")
 const resultsDisplayElements = document.querySelectorAll(".results-display")
+const playerNameElement = document.querySelectorAll(".player-name")
+
+playerNameElement[0].textContent = `${firtsPlayerName} play by X score`
+playerNameElement[1].textContent = `${secondPlayerName} play by O score`
 
 resetButtonElement.style.visibility = "hidden";
 
@@ -44,46 +62,48 @@ function updateMessage(){
     messageElement.textContent = `Player ${playerTurn} turn`
 }
 
+
 updateMessage()
 
+// This function used for timing source https://stackoverflow.com/questions/31106189/create-a-simple-10-second-countdown
+let timeleft = 0;
+let timerStoperKey = false
+if(activateTimer === "yes"){
+    timerStoperKey = true
+}
+let downloadTimer 
+if(timerStoperKey){
+    downloadTimer = setInterval(function(){
+    if(timeleft >= 10){
+        countdownTimer = true;
+        play(getRoundomIndex(),"O");
+        if(computerPlay) computerPlay();
+        timeleft = 0;
+    }
+    if(winner || tie){
+        
+    }else{
+        messageElement.innerHTML = `Player ${playerTurn} turn ➪ time remain: ${10 - timeleft}`
+    }
+        timeleft += 1;
+    }, 1000);
+}
 function checkWiningCompareBoard(boardTemp){
-    winningBoard.forEach((line)=>{
+    for(let line of winningBoard){
         let a = line[0]
         let b = line[1]
         let c = line[2]
         if(boardTemp[a] === boardTemp[b] && boardTemp[b] === boardTemp[c] && boardTemp[a] !== ""){
-            winner = boardTemp[a]
-            return true
+            return boardTemp[a];
         }
-    })
-    let emptyTiles = getEmptyTileIndex(board)
-    if(!winner && emptyTiles.length === 0){
-        tie = true
-        return true
     }
-    return false
+    let emptyTiles = getEmptyTileIndex(boardTemp)
+    if(emptyTiles.length === 0){
+       return "tie";
+    }
+    return false;
 }
 
-function checkWining(boardTemp){
-    winningBoard.forEach((line)=>{
-        let a = line[0]
-        let b = line[1]
-        let c = line[2]
-        if(boardTemp[a] === playerTurn && boardTemp[b] === playerTurn && boardTemp[c] === playerTurn){
-            // squareElements[a].style.color = "red"
-            // squareElements[b].style.color = "red"
-            // squareElements[c].style.color = "red"
-            winner = playerTurn
-            return true
-        }
-    })
-    let emptyTiles = getEmptyTileIndex(board)
-    if(!winner && emptyTiles.length === 0){
-        tie = true
-        return true
-    }
-    return false
-}
 
 const isGameOver = ()=>{
     if(winner){
@@ -101,55 +121,71 @@ const isGameOver = ()=>{
     }
 }
 
+function updateWinner(tempWinner){
+    if(tempWinner === "tie"){
+        tie = true;
+    }else if (tempWinner !== ""){
+        winner=tempWinner
+    }
+}
 
 // This function use to display the player simpoles and update the 
 // board and the history
 function play(index, nextPlayerTurn){
     squareElements[index].textContent = playerTurn
     board[index] = playerTurn
-    checkWiningCompareBoard(board)
+    updateWinner(checkWiningCompareBoard(board))
     gameHistory.push(index)
     playerTurn = nextPlayerTurn
     redoGameHistory = []
 }
 
 
+
 function getEmptyTileIndex(boardTemp){
-    let emptyTile = []
+    let emptyTiles = []
     for (let i = 0; i < boardTemp.length; i++) {
         if(boardTemp[i] === ""){
-            emptyTile.push(i)
+            emptyTiles.push(i)
         }
     }
-
-    return emptyTile
+    return emptyTiles
 }
 
-function computerPlay() {
-    if (computerPlayer === "pc" && !winner && !tie) {
-        let emptyTiles = getEmptyTileIndex(board);
+function getRoundomIndex(){
+    let emptyTiles = getEmptyTileIndex(board);
         if (emptyTiles.length > 0) {
             let randomIndex = Math.floor(Math.random() * emptyTiles.length)
-            let emptyIndex = emptyTiles[randomIndex];
-            play(emptyIndex, "X");
+            return emptyTiles[randomIndex];
         }
+}
+function computerPlay() {
+    if (computerPlayer === "pc" && !winner && !tie) {
+        play(getRoundomIndex(), "X");
     }
+    if( computerPlayer === "sm" && !winner && !tie){
+        let index =  bestMove()
+        console.log(`sn play ${index}`)
+        play(index, "X");
+    }
+    isGameOver()
+    displayResults()
 }
 
 // For loop to wait buttons event
 squareElements.forEach((square)=>{
-    square.addEventListener('click',()=>{
+    square.addEventListener('click',(event)=>{
         let boardIndex = event.target.id
         if(board[boardIndex] === "" && winner === false){
             if(playerTurn === "X"){
                 play(boardIndex, "O")
                 computerPlay()
+                timeleft = 0;
             }else if (computerPlayer !== "pc"){
                 play(boardIndex, "X")
+                timeleft = 0;
             }
-            updateMessage()
-            isGameOver()
-            displayResults()
+            // updateMessage()
         }
     })
 })
@@ -173,6 +209,10 @@ resetButtonElement.addEventListener('click',()=>{
     undoButtonElement.disabled =false;
     redoButtonElement.disabled =false;
     resetButtonElement.style.visibility = "hidden";
+    if(timerStoperKey){
+        setInterval(downloadTimer(),1000);
+    }
+    
 })
 
 // This function to undo the game
@@ -201,3 +241,68 @@ function redoGame(){
 
 redoButtonElement.addEventListener('click', redoGame);
 undoButtonElement.addEventListener('click', undoGame);
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+// Use miniMax algorithms
+function bestMove(){
+    let bestScore = -Infinity
+    let bestMove;
+    let actions = getActionList(board);
+
+    for(let action of actions){
+        board[action] ="O"
+        let score = miniMax(board,0, false);
+        board[action] =""
+        if(score > bestScore){
+            bestMove = action;
+            bestScore = score;
+        }
+    }
+    return bestMove;
+}
+
+
+function getActionList(boardTemp){
+    let actionsList = getEmptyTileIndex(boardTemp);
+    return actionsList;
+
+}
+
+function miniMax(boardTemp, depth, isMaximising){
+    let winnerTemp = checkWiningCompareBoard(boardTemp)
+    if (winnerTemp){
+        if(winnerTemp === "tie"){
+            return 0;
+        }else if(winnerTemp === "O"){
+            return 10 - depth;
+        }else{
+            return depth - 10;
+        }
+    }
+
+    if (isMaximising){ // if player O maximise the score
+        let score = -Infinity;
+        let actions = getActionList(boardTemp);
+        if (!actions.length) return 0;
+        for(const action of actions){
+            boardTemp[action] = "O"
+            let minmaxScore = miniMax(boardTemp,depth + 1,false)
+            boardTemp[action] = ""
+            score = Math.max(score, minmaxScore)
+        }
+        return score;
+    }else{ // if player X minimise the score
+        let score = Infinity;
+        let actions = getActionList(boardTemp);
+        if (!actions.length) return 0;
+        for(const action of actions){
+            boardTemp[action] = "X"
+            let minmaxScore = miniMax(boardTemp,depth + 1,true)
+            boardTemp[action] = ""
+            score = Math.min(score, minmaxScore)
+        }
+        return score;
+    }
+}
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
